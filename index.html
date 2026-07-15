@@ -1,0 +1,1989 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>环保MBTI - 你的地球决策风格</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <style>
+    /* ========== CSS Variables ========== */
+    :root {
+      --bg: #e8f4f8;
+      --bg-gradient: linear-gradient(135deg, #e8f4f8 0%, #f0f7f4 50%, #e0f0e8 100%);
+      --panel: #ffffff;
+      --text: #1a3a3a;
+      --muted: #5a8a7a;
+      --line: #b8d8d0;
+      --soft: #e0f0e8;
+      --accent: #2e8b57;
+      --accent-light: #3cb371;
+      --accent-blue: #87ceeb;
+      --accent-teal: #20b2aa;
+      --shadow: 0 8px 32px rgba(46, 139, 87, 0.08);
+      --radius: 20px;
+      --transition: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    /* ========== Reset & Base ========== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    body {
+      background: var(--bg-gradient);
+      background-attachment: fixed;
+    }
+
+    /* ========== Navigation ========== */
+    .top-nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 60px;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 1000;
+      border-bottom: 1px solid var(--line);
+      box-shadow: 0 2px 12px rgba(46,139,87,0.06);
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--accent);
+    }
+    .nav-links {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 0.85rem;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+    .nav-links .active { color: var(--accent); font-weight: 600; }
+
+    /* ========== Screen System ========== */
+    .screen {
+      display: none;
+      min-height: 100vh;
+      padding: 80px 20px 40px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .screen.active {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .screen.fade-in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ========== 小碳碳 IP ========== */
+    .xiaotantan {
+      width: 80px; height: 80px;
+      background: radial-gradient(circle at 30% 30%, #87ceeb, #5a9ab5);
+      border-radius: 50%;
+      position: relative;
+      animation: float 3s ease-in-out infinite;
+      box-shadow: 0 4px 16px rgba(90,154,181,0.3);
+      flex-shrink: 0;
+    }
+    .xiaotantan::before {
+      content: '';
+      position: absolute;
+      top: 8px; left: 50%;
+      transform: translateX(-50%);
+      width: 12px; height: 16px;
+      background: linear-gradient(to top, #3cb371, #2e8b57);
+      border-radius: 50% 50% 0 0;
+      animation: sway 2s ease-in-out infinite;
+    }
+    .xiaotantan::after {
+      content: '';
+      position: absolute;
+      top: 35px; left: 22px;
+      width: 36px; height: 12px;
+      background: radial-gradient(ellipse, rgba(255,255,255,0.4) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .xiaotantan .eyes {
+      position: absolute;
+      top: 42px; left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 14px;
+    }
+    .xiaotantan .eyes span {
+      width: 8px; height: 8px;
+      background: #1a3a3a;
+      border-radius: 50%;
+      animation: blink 4s ease-in-out infinite;
+    }
+    .xiaotantan-small {
+      width: 48px; height: 48px;
+      background: radial-gradient(circle at 30% 30%, #87ceeb, #5a9ab5);
+      border-radius: 50%;
+      position: relative;
+      animation: float 3s ease-in-out infinite;
+      box-shadow: 0 2px 8px rgba(90,154,181,0.3);
+      flex-shrink: 0;
+    }
+    .xiaotantan-small::before {
+      content: '';
+      position: absolute;
+      top: 5px; left: 50%;
+      transform: translateX(-50%);
+      width: 8px; height: 10px;
+      background: linear-gradient(to top, #3cb371, #2e8b57);
+      border-radius: 50% 50% 0 0;
+    }
+    .xiaotantan-small::after {
+      content: '';
+      position: absolute;
+      top: 22px; left: 14px;
+      width: 20px; height: 6px;
+      background: radial-gradient(ellipse, rgba(255,255,255,0.4) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .xiaotantan-small .eyes {
+      position: absolute;
+      top: 25px; left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+    }
+    .xiaotantan-small .eyes span {
+      width: 5px; height: 5px;
+      background: #1a3a3a;
+      border-radius: 50%;
+      animation: blink 4s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    @keyframes sway {
+      0%, 100% { transform: translateX(-50%) rotate(-5deg); }
+      50% { transform: translateX(-50%) rotate(5deg); }
+    }
+    @keyframes blink {
+      0%, 45%, 55%, 100% { transform: scaleY(1); }
+      50% { transform: scaleY(0.1); }
+    }
+
+    /* ========== Intro Screen ========== */
+    #intro {
+      justify-content: center;
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    #intro .xiaotantan {
+      margin: 0 auto 32px;
+      width: 120px; height: 120px;
+    }
+    #intro .xiaotantan::before {
+      width: 18px; height: 22px;
+      top: 10px;
+    }
+    #intro .xiaotantan::after {
+      top: 50px; left: 32px;
+      width: 56px; height: 16px;
+    }
+    #intro .xiaotantan .eyes { top: 58px; gap: 18px; }
+    #intro .xiaotantan .eyes span { width: 10px; height: 10px; }
+    .intro-title {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--accent);
+      margin-bottom: 16px;
+      line-height: 1.3;
+    }
+    .intro-subtitle {
+      font-size: 1rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+      line-height: 1.8;
+    }
+    .visitor-count {
+      font-size: 0.9rem;
+      color: var(--accent-teal);
+      margin-bottom: 24px;
+      font-weight: 500;
+    }
+    .visitor-number {
+      font-weight: 700;
+      color: var(--accent);
+      font-size: 1.1rem;
+    }
+    .typewriter-text {
+      font-size: 1.05rem;
+      line-height: 2;
+      color: var(--text);
+      margin-bottom: 40px;
+      min-height: 120px;
+    }
+    .typewriter-cursor {
+      display: inline-block;
+      width: 2px; height: 1.2em;
+      background: var(--accent);
+      animation: cursorBlink 1s step-end infinite;
+      vertical-align: text-bottom;
+      margin-left: 2px;
+    }
+    @keyframes cursorBlink { 50% { opacity: 0; } }
+    .btn-primary {
+      display: inline-block;
+      padding: 16px 48px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      color: white;
+      border: none;
+      border-radius: 50px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(46,139,87,0.3);
+      transition: transform 0.3s, box-shadow 0.3s;
+      text-decoration: none;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(46,139,87,0.4);
+    }
+    .btn-primary:active { transform: translateY(0); }
+
+    /* ========== Test Screen ========== */
+    #test {
+      max-width: 720px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .test-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding: 0 4px;
+    }
+    .test-header-info {
+      flex: 1;
+    }
+    .test-header-info .chapter-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+    .test-header-info .chapter-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+    .progress-wrapper {
+      margin-bottom: 24px;
+      padding: 0 4px;
+    }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: var(--soft);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-teal), var(--accent));
+      border-radius: 4px;
+      transition: width 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+      position: relative;
+    }
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 0; right: 0; bottom: 0;
+      width: 20px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4));
+      animation: shimmer 2s infinite;
+    }
+    @keyframes shimmer {
+      0% { transform: translateX(-20px); }
+      100% { transform: translateX(20px); }
+    }
+
+    .question-card {
+      background: var(--panel);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+      border: 1px solid var(--line);
+    }
+    .question-image {
+      width: 100%;
+      max-height: 200px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      display: block;
+    }
+    .question-location {
+      display: inline-block;
+      font-size: 0.75rem;
+      color: var(--accent-teal);
+      background: var(--soft);
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+    .question-scenario {
+      font-size: 1.05rem;
+      line-height: 1.8;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .question-number {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+    .options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .option-btn {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 18px 20px;
+      background: var(--soft);
+      border: 2px solid transparent;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: left;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: var(--text);
+      width: 100%;
+    }
+    .option-btn:hover {
+      background: rgba(46,139,87,0.08);
+      border-color: var(--accent);
+      transform: translateX(4px);
+    }
+    .option-btn.selected {
+      background: rgba(46,139,87,0.1);
+      border-color: var(--accent);
+    }
+    .option-letter {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--panel);
+      border: 2px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--muted);
+      flex-shrink: 0;
+      transition: all 0.3s;
+    }
+    .option-btn:hover .option-letter {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .option-btn.selected .option-letter {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+    .option-text {
+      flex: 1;
+      padding-top: 4px;
+    }
+    .test-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 24px;
+      padding: 0 4px;
+    }
+    .btn-nav {
+      padding: 12px 28px;
+      border-radius: 50px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: none;
+    }
+    .btn-nav-prev {
+      background: var(--panel);
+      color: var(--muted);
+      border: 1px solid var(--line);
+    }
+    .btn-nav-prev:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .btn-nav-next {
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      color: white;
+      box-shadow: 0 4px 16px rgba(46,139,87,0.25);
+    }
+    .btn-nav-next:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(46,139,87,0.35);
+    }
+    .btn-nav-next:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ========== Chapter Transition ========== */
+    #chapter-transition {
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(232,244,248,0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 900;
+      padding: 40px 24px;
+    }
+    #chapter-transition .xiaotantan {
+      margin: 0 auto 28px;
+      width: 100px; height: 100px;
+    }
+    #chapter-transition .xiaotantan::before {
+      width: 15px; height: 20px;
+      top: 8px;
+    }
+    #chapter-transition .xiaotantan::after {
+      top: 42px; left: 26px;
+      width: 48px; height: 14px;
+    }
+    #chapter-transition .xiaotantan .eyes { top: 50px; gap: 16px; }
+    #chapter-transition .xiaotantan .eyes span { width: 9px; height: 9px; }
+    .chapter-transition-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    .chapter-transition-desc {
+      font-size: 1rem;
+      color: var(--muted);
+      line-height: 1.8;
+      max-width: 400px;
+      margin: 0 auto 32px;
+    }
+    .chapter-tip {
+      background: var(--panel);
+      border-radius: 16px;
+      padding: 20px 24px;
+      max-width: 400px;
+      margin: 0 auto 32px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: var(--text);
+    }
+    .chapter-tip-label {
+      font-size: 0.75rem;
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* ========== Result Screen ========== */
+    #result {
+      max-width: 720px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .result-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .result-type-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      color: white;
+      padding: 6px 20px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      letter-spacing: 1px;
+    }
+    .result-name {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .result-slogan {
+      font-size: 1.1rem;
+      color: var(--muted);
+      font-style: italic;
+      margin-bottom: 24px;
+    }
+    .result-card {
+      background: var(--panel);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--line);
+      margin-bottom: 20px;
+    }
+    .result-card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .result-card-title .icon {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      background: var(--soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+    }
+    .result-desc {
+      font-size: 0.95rem;
+      line-height: 1.8;
+      color: var(--text);
+    }
+    .radar-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px 0;
+    }
+    #radarCanvas {
+      max-width: 100%;
+    }
+    .dimension-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .dimension-bar-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .dimension-bar-label {
+      width: 80px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .dimension-bar-track {
+      flex: 1;
+      height: 12px;
+      background: var(--soft);
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+    .dimension-bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      transition: width 1s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    .dimension-bar-fill.ac { background: linear-gradient(90deg, var(--accent-blue), var(--accent-teal)); }
+    .dimension-bar-fill.ar { background: linear-gradient(90deg, var(--accent-teal), var(--accent)); }
+    .dimension-bar-fill.pn { background: linear-gradient(90deg, var(--accent-light), var(--accent)); }
+    .dimension-bar-value {
+      width: 40px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-align: left;
+      flex-shrink: 0;
+    }
+    .intervention-box {
+      background: linear-gradient(135deg, #fff8e8, #fff3d0);
+      border: 1px solid #f0e0b0;
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-top: 16px;
+    }
+    .intervention-box .label {
+      font-size: 0.75rem;
+      color: #c9a030;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .intervention-box .title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #8a6d20;
+      margin-bottom: 8px;
+    }
+    .intervention-box .desc {
+      font-size: 0.9rem;
+      line-height: 1.7;
+      color: #6a5d20;
+    }
+    .result-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .btn-result {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border-radius: 50px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: none;
+      width: 100%;
+    }
+    .btn-share {
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-teal));
+      color: white;
+      box-shadow: 0 4px 16px rgba(32,178,170,0.3);
+    }
+    .btn-share:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(32,178,170,0.4);
+    }
+    .btn-restart {
+      background: var(--panel);
+      color: var(--muted);
+      border: 1px solid var(--line);
+    }
+    .btn-restart:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .btn-placeholder {
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      color: white;
+      box-shadow: 0 4px 16px rgba(46,139,87,0.3);
+      opacity: 0.7;
+    }
+    .btn-placeholder:hover {
+      opacity: 1;
+      transform: translateY(-2px);
+    }
+
+    /* ========== Share Modal ========== */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      padding: 20px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-content {
+      background: var(--panel);
+      border-radius: var(--radius);
+      padding: 24px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      animation: modalIn 0.4s ease;
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .modal-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+    .modal-img {
+      width: 100%;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      border: 1px solid var(--line);
+    }
+    .modal-hint {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+    .btn-modal-close {
+      padding: 10px 32px;
+      background: var(--soft);
+      color: var(--text);
+      border: none;
+      border-radius: 50px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-modal-close:hover { background: var(--line); }
+
+    /* ========== Responsive ========== */
+    @media (max-width: 480px) {
+      .intro-title { font-size: 1.6rem; }
+      .result-name { font-size: 1.6rem; }
+      .question-card { padding: 20px 16px; }
+      .option-btn { padding: 14px 16px; font-size: 0.9rem; }
+      .option-letter { width: 28px; height: 28px; font-size: 0.8rem; }
+      .test-nav { flex-direction: column; gap: 12px; }
+      .btn-nav { width: 100%; justify-content: center; }
+      .dimension-bar-label { width: 60px; font-size: 0.75rem; }
+    }
+    @media (min-width: 768px) {
+      .result-actions {
+        flex-direction: row;
+        justify-content: center;
+      }
+      .btn-result { width: auto; }
+    }
+
+    /* ========== Utility ========== */
+    .hidden { display: none !important; }
+    .text-center { text-align: center; }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header class="top-nav">
+    <div class="nav-logo">
+      <div class="xiaotantan-small"><div class="eyes"><span></span><span></span></div></div>
+      <span>环保MBTI</span>
+    </div>
+    <nav class="nav-links">
+      <a href="#" class="active" data-screen="intro">首页</a>
+      <a href="#" data-screen="test">测试</a>
+      <a href="#" onclick="alert('排行榜功能即将上线');return false;">排行榜</a>
+    </nav>
+  </header>
+
+  <!-- Intro Screen -->
+  <section id="intro" class="screen active">
+    <div class="xiaotantan"><div class="eyes"><span></span><span></span></div></div>
+    <h1 class="intro-title">你的地球决策风格<br>是什么？</h1>
+    <p class="intro-subtitle">环保MBTI · 12个真实世界切片</p>
+    <p class="visitor-count" id="visitorCount">你是第 <span class="visitor-number">...</span> 位地球球长候选人</p>
+    <div class="typewriter-text" id="typewriter"></div>
+    <button class="btn-primary" id="btnStart" style="display:none">开始测试</button>
+  </section>
+
+  <!-- Test Screen -->
+  <section id="test" class="screen">
+    <div class="test-header">
+      <div class="xiaotantan-small"><div class="eyes"><span></span><span></span></div></div>
+      <div class="test-header-info">
+        <div class="chapter-label" id="chapterLabel">第一章</div>
+        <div class="chapter-title" id="chapterTitle">日常惯性</div>
+      </div>
+    </div>
+    <div class="progress-wrapper">
+      <div class="progress-label">
+        <span>进度</span>
+        <span id="progressText">1 / 12</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width:8%"></div>
+      </div>
+    </div>
+    <div class="question-card">
+      <img class="question-image" id="questionImage" src="" alt="场景配图" style="display:none;">
+      <span class="question-location" id="questionLocation">深圳大学城</span>
+      <div class="question-scenario" id="questionScenario">凌晨1点的外卖单</div>
+      <div class="question-number" id="questionNumber">第 1 题 / 共 12 题</div>
+      <div class="options-list" id="optionsList"></div>
+    </div>
+    <div class="test-nav">
+      <button class="btn-nav btn-nav-prev" id="btnPrev">上一题</button>
+      <button class="btn-nav btn-nav-next" id="btnNext" disabled>下一题</button>
+    </div>
+  </section>
+
+  <!-- Chapter Transition -->
+  <section id="chapter-transition" class="screen">
+    <div class="xiaotantan"><div class="eyes"><span></span><span></span></div></div>
+    <h2 class="chapter-transition-title" id="transitionTitle">第一章</h2>
+    <p class="chapter-transition-desc" id="transitionDesc">日常惯性</p>
+    <div class="chapter-tip">
+      <div class="chapter-tip-label">小碳碳提示</div>
+      <div id="transitionTip">接下来你会进入日常生活的场景，请凭直觉选择最接近你真实行为的选项。</div>
+    </div>
+    <button class="btn-primary" id="btnContinue">继续</button>
+  </section>
+
+  <!-- Result Screen -->
+  <section id="result" class="screen">
+    <div class="result-header">
+      <div class="result-type-badge" id="resultTypeBadge">地球合伙人</div>
+      <h2 class="result-name" id="resultName">地球合伙人</h2>
+      <p class="result-slogan" id="resultSlogan">"信息、责任、原则——我全都要，但也会累"</p>
+    </div>
+
+    <div class="result-card">
+      <div class="result-card-title"><div class="icon">📊</div>三维雷达图</div>
+      <div class="radar-container">
+        <canvas id="radarCanvas" width="360" height="300"></canvas>
+      </div>
+      <div class="dimension-bars">
+        <div class="dimension-bar-item">
+          <div class="dimension-bar-label">结果意识</div>
+          <div class="dimension-bar-track"><div class="dimension-bar-fill ac" id="barAc" style="width:0%"></div></div>
+          <div class="dimension-bar-value" id="valAc">0/24</div>
+        </div>
+        <div class="dimension-bar-item">
+          <div class="dimension-bar-label">责任归属</div>
+          <div class="dimension-bar-track"><div class="dimension-bar-fill ar" id="barAr" style="width:0%"></div></div>
+          <div class="dimension-bar-value" id="valAr">0/32</div>
+        </div>
+        <div class="dimension-bar-item">
+          <div class="dimension-bar-label">个体规范</div>
+          <div class="dimension-bar-track"><div class="dimension-bar-fill pn" id="barPn" style="width:0%"></div></div>
+          <div class="dimension-bar-value" id="valPn">0/32</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-card">
+      <div class="result-card-title"><div class="icon">📝</div>人格画像</div>
+      <p class="result-desc" id="resultDesc"></p>
+    </div>
+
+    <div class="result-card">
+      <div class="result-card-title"><div class="icon">🎯</div>最短板分析</div>
+      <div class="intervention-box" id="interventionBox">
+        <div class="label">干预策略</div>
+        <div class="title" id="interventionTitle"></div>
+        <div class="desc" id="interventionDesc"></div>
+      </div>
+    </div>
+
+    <div class="result-card">
+      <div class="result-card-title"><div class="icon">💡</div>个性化建议</div>
+      <p class="result-desc" id="resultAdvice"></p>
+    </div>
+
+    <div class="result-actions">
+      <button class="btn-result btn-share" id="btnShare">📤 生成分享卡片</button>
+      <button class="btn-result btn-restart" id="btnRestart">🔄 重新测试</button>
+    </div>
+  </section>
+
+  <!-- Share Modal -->
+  <div class="modal-overlay" id="shareModal">
+    <div class="modal-content">
+      <div class="modal-title">你的环保人格卡片</div>
+      <img class="modal-img" id="shareModalImg" alt="分享卡片">
+      <p class="modal-hint">长按保存图片，分享到朋友圈</p>
+      <button class="btn-modal-close" id="btnCloseModal">关闭</button>
+    </div>
+  </div>
+
+  <!-- Hidden Share Canvas -->
+  <canvas id="shareCanvas" style="display:none"></canvas>
+
+  <script>
+    // ===================== CONFIG =====================
+    const CONFIG = {
+      // GitHub Pages 部署后的地址，部署后请修改
+      siteUrl: 'https://andrew123lu.github.io/eco-mbti',
+      // Supabase 配置（可选，如需后台数据收集请填写）
+      // 注册: https://supabase.com，创建项目后获取 URL 和 anon key
+      supabaseUrl: '',
+      supabaseKey: '',
+      // 访客计数 API（使用 countapi.xyz，免费无需注册）
+      countApiNamespace: 'eco-mbti-andrew123lu',
+      countApiKey: 'visitor-counter'
+    };
+
+    // ===================== SUPABASE INIT =====================
+    let supabase = null;
+    let visitorNumber = 0;
+
+    if (CONFIG.supabaseUrl && CONFIG.supabaseKey) {
+      supabase = supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
+    }
+
+    // ===================== VISITOR COUNT =====================
+    async function initVisitorCount() {
+      const countEl = document.getElementById('visitorCount');
+      const numEl = countEl.querySelector('.visitor-number');
+      
+      try {
+        // 使用 countapi.xyz 获取并递增访客计数
+        const response = await fetch(
+          `https://api.countapi.xyz/hit/${CONFIG.countApiNamespace}/${CONFIG.countApiKey}`
+        );
+        const data = await response.json();
+        visitorNumber = data.value;
+        numEl.textContent = visitorNumber.toLocaleString('zh-CN');
+      } catch (e) {
+        // 降级：使用 localStorage 本地计数
+        let localCount = parseInt(localStorage.getItem('eco_mbti_visitor_count') || '0');
+        localCount++;
+        localStorage.setItem('eco_mbti_visitor_count', localCount.toString());
+        visitorNumber = localCount;
+        numEl.textContent = localCount.toLocaleString('zh-CN');
+      }
+    }
+
+    // ===================== DATA SUBMISSION =====================
+    async function submitResult(result) {
+      if (!supabase) return;
+      
+      try {
+        // 提交结果
+        await supabase.from('results').insert([{
+          visitor_number: visitorNumber,
+          type_key: result.typeKey,
+          type_name: result.type.name,
+          ac_score: result.ac,
+          ar_score: result.ar,
+          pn_score: result.pn,
+          created_at: new Date().toISOString()
+        }]);
+        
+        // 提交每道题的答案
+        const answers = [];
+        for (const [qId, ans] of Object.entries(app.answers)) {
+          answers.push({
+            visitor_number: visitorNumber,
+            question_id: qId,
+            option_index: ans.index,
+            ac: ans.ac,
+            ar: ans.ar,
+            pn: ans.pn,
+            created_at: new Date().toISOString()
+          });
+        }
+        
+        if (answers.length > 0) {
+          await supabase.from('answers').insert(answers);
+        }
+      } catch (e) {
+        console.error('数据提交失败:', e);
+      }
+    }
+
+    // ===================== DATA LAYER =====================
+
+    const questions = [
+      {
+        id: 'q1', chapter: 1, chapterTitle: '日常惯性',
+        location: '深圳大学城',
+        scenario: '周五凌晨1点，你在宿舍赶DDL，肚子饿得咕咕叫。打开外卖APP，最常点的那家店30分钟送达。默认勾选了一次性餐具，包装是普通的塑料盒。你想起上周扔垃圾时，宿舍楼下的分类桶已经满溢，保洁阿姨正把垃圾混装收走。',
+        options: [
+          { label: 'A', text: '我快速下单最常点的那家，现在只想填饱肚子，包装什么的明天再说。', ac: 1, ar: 1, pn: 1 },
+          { label: 'B', text: '我顺手勾选"无需餐具"，但不会为了环保换一家不熟悉或更贵的店。', ac: 2, ar: 1, pn: 3 },
+          { label: 'C', text: '我点开商家详情，看看有没有关于包装材质或回收政策的说明，再决定。', ac: 4, ar: 1, pn: 2 },
+          { label: 'D', text: '我发消息问室友要不要一起拼单，顺便聊聊哪家店在环保上做得更好。', ac: 2, ar: 4, pn: 2 }
+        ]
+      },
+      {
+        id: 'q2', chapter: 1, chapterTitle: '日常惯性',
+        location: '澳门合租公寓',
+        scenario: '澳门盛夏，室温32度。你回到合租公寓，室友把空调开到18度，裹着棉被在沙发上刷手机。电费是你们平摊的，上个月你多付了80澳门元。窗外远处能看到黑沙海滩，但你注意到新闻里说那片海滩正因海平面上升逐年萎缩。',
+        options: [
+          { label: 'A', text: '我拿出自己的小风扇，不想为温度跟室友起冲突，月底电费再说。', ac: 1, ar: 1, pn: 1 },
+          { label: 'B', text: '我直接说"调高一点吧，月底电费账单会很难看"，用经济理由沟通。', ac: 2, ar: 2, pn: 2 },
+          { label: 'C', text: '我查了澳门电力公司的公开数据，把"空调温度与碳排"的对比图表发到室友群。', ac: 4, ar: 3, pn: 2 },
+          { label: 'D', text: '我提议周末一起定个"夏季空调公约"，写清楚温度、时段和电费分摊规则。', ac: 2, ar: 4, pn: 4 }
+        ]
+      },
+      {
+        id: 'q3', chapter: 1, chapterTitle: '日常惯性',
+        location: '香港中环',
+        scenario: '你在香港中环参加一场行业论坛，茶歇时所有人都在用一次性纸杯。你自带了保温杯，但发现全场只有你一个人这么做，几个同行者投来略带异样的目光。你想起自己年初随手写下的一个个人目标："尽量少用一次性塑料"——那时你并没有认真想过要坚持多久。',
+        options: [
+          { label: 'A', text: '我用纸杯吧，不想显得格格不入，反正就喝一次，下次再带杯子也行。', ac: 1, ar: 1, pn: 1 },
+          { label: 'B', text: '我用保温杯，但如果有人问，就笑着说"我习惯用这个，没别的意思"。', ac: 1, ar: 1, pn: 4 },
+          { label: 'C', text: '我用保温杯，同时下意识地数了数全场有多少比例的人也自带了杯子。', ac: 4, ar: 1, pn: 2 },
+          { label: 'D', text: '我用保温杯，茶歇后给主办方留言，建议下次准备可循环杯具或租借方案。', ac: 2, ar: 4, pn: 3 }
+        ]
+      },
+      {
+        id: 'q4', chapter: 2, chapterTitle: '涟漪效应',
+        location: '全球化 / 超市',
+        scenario: '你在超市看到进口巴西牛排促销，价格比本地牛肉便宜30%。标签上写着"草饲、天然"，但没有更多产地信息。你想起最近读到的一篇文章，提到亚马逊雨林砍伐与肉牛养殖的关系，但你不确定这块牛排是否来自那片区域。你站在冷柜前，手机在手里转了半圈。',
+        options: [
+          { label: 'A', text: '我选便宜的，产地信息我扫一眼但不会专门研究，购物就是买需要的。', ac: 1, ar: 1, pn: 1 },
+          { label: 'B', text: '我犹豫了一下，但最终还是买了，因为这周预算确实紧张，下次再注意。', ac: 2, ar: 1, pn: 2 },
+          { label: 'C', text: '我站那儿用手机查了一会儿"巴西牛肉碳足迹"和雨林砍伐的关联数据，再决定。', ac: 4, ar: 2, pn: 2 },
+          { label: 'D', text: '我选本地牛肉，因为我对"食物里程"这个概念比较关注，不想增加碳排放。', ac: 3, ar: 1, pn: 4 }
+        ]
+      },
+      {
+        id: 'q5', chapter: 2, chapterTitle: '涟漪效应',
+        location: '全球化 / 快时尚',
+        scenario: '你花89元在网上买了一件T恤，标签写着"孟加拉制造"。衣服到手后，你穿着照镜子，觉得颜色不错。但你偶然刷到一条纪录片片段：孟加拉国的纺织厂每天向河流排放含重金属的染料，工人时薪不足2美元。你看着镜子里的自己，手指停在"确认收货"按钮上。',
+        options: [
+          { label: 'A', text: '我确认收货了，89元能穿一季就扔，性价比很高，工厂条件是品牌该管的事。', ac: 1, ar: 1, pn: 1 },
+          { label: 'B', text: '我查了查这个品牌有没有环保或公平贸易认证，有就留下，没有就考虑退货。', ac: 4, ar: 2, pn: 2 },
+          { label: 'C', text: '我决定以后控制购买频率，转向基础款或二手平台，这件先留着穿久一点。', ac: 2, ar: 1, pn: 4 },
+          { label: 'D', text: '我在社交账号上分享了这条纪录片，想听听朋友们的看法和有没有替代品牌推荐。', ac: 2, ar: 4, pn: 2 }
+        ]
+      },
+      {
+        id: 'q6', chapter: 2, chapterTitle: '涟漪效应',
+        location: '全球化 / 旅行',
+        scenario: '你计划暑假去欧洲旅行，查机票时发现单程航班碳排放约1.2吨——相当于你半年的低碳生活积累。航空公司提供"碳抵消"选项：多花200元种植树苗。但你看到争议说这些树苗可能种在千里之外，且存活率未知。你的手指在"预订"和"关闭"之间徘徊。',
+        options: [
+          { label: 'A', text: '我买票了，旅行对我很重要，碳排是没办法的代价，我不纠结这个。', ac: 1, ar: 1, pn: 1 },
+          { label: 'B', text: '我买了碳抵消，算是尽一份力，但主要还是想飞，抵消就当买个心安。', ac: 2, ar: 1, pn: 3 },
+          { label: 'C', text: '我重新规划了路线，改成火车+短途飞行，计算了一下能减少多少碳排。', ac: 4, ar: 2, pn: 2 },
+          { label: 'D', text: '我考虑把长途旅行改成大湾区周边深度探索，想看看有没有被忽略的风景。', ac: 3, ar: 3, pn: 4 }
+        ]
+      },
+      {
+        id: 'q7', chapter: 3, chapterTitle: '价值冲突',
+        location: '深圳 / 华强北',
+        scenario: '你的旧手机电池老化，去华强北维修店。老板说："换电池200元，以旧换新抵800元。"你想起深圳每年产生20万吨电子垃圾，其中仅30%被规范回收，其余流入地下拆解村，工人用硫酸洗电路板，废水直排河流。但你查了一下，官方正规回收点离你很远，而且要预约。',
+        options: [
+          { label: 'A', text: '我以旧换新，方便省事，还能省钱，正规回收太麻烦了。', ac: 1, ar: 1, pn: 1 },
+          { label: 'B', text: '我查了一下深圳官方的"e回收"平台，虽然要预约和邮寄，但我想试试。', ac: 4, ar: 2, pn: 2 },
+          { label: 'C', text: '我决定不换手机，花200元换块电池继续用，觉得还能撑一年，没必要追新。', ac: 2, ar: 1, pn: 4 },
+          { label: 'D', text: '我发起了一个宿舍"旧机回收"小组，联系官方平台批量上门取件，帮大家一起处理。', ac: 2, ar: 4, pn: 3 }
+        ]
+      },
+      {
+        id: 'q8', chapter: 3, chapterTitle: '价值冲突',
+        location: '香港 / 公共政策',
+        scenario: '香港政府就"明日大屿"填海计划征求青年意见。填海可建26万套住房，缓解房价压力，但将摧毁大片海洋生态，施工碳排相当于全港汽车运行3个月。中华白海豚的栖息地就在规划区内。你作为青年代表，手握一张咨询票，但你知道无论怎么选，都会有人失望。',
+        options: [
+          { label: 'A', text: '我没关注这个议题，觉得离我的日常生活有点远，咨询会也不打算去。', ac: 1, ar: 1, pn: 1 },
+          { label: 'B', text: '我倾向于反对，因为担心生态，但只是在网上点赞，不会真的去咨询会发言。', ac: 2, ar: 1, pn: 4 },
+          { label: 'C', text: '我想参加咨询会，先听听政府、环保团体和开发商三方的数据和论证。', ac: 4, ar: 2, pn: 2 },
+          { label: 'D', text: '我组织了同学一起去咨询会，并准备了"棕地优先开发"的替代方案资料提交。', ac: 3, ar: 4, pn: 3 }
+        ]
+      },
+      {
+        id: 'q9', chapter: 3, chapterTitle: '价值冲突',
+        location: '澳门 / 文化遗产',
+        scenario: '你在澳门历史城区游玩，大三巴牌坊周边游客暴增，商铺为了竞争把空调外机挂满街道，热浪和碳排双重冲击古建筑。文化遗产局提议限制外机数量，但商户称"不装空调客人会流失"。你是游客，也是学生活动策划者，站在牌坊下，你感到热浪扑面而来。',
+        options: [
+          { label: 'A', text: '我是游客，我主要关心自己舒不舒服，商户和政府的博弈我不参与。', ac: 1, ar: 1, pn: 1 },
+          { label: 'B', text: '我优先选有绿色认证或室内通风好的商铺消费，用行动支持做得好的商家。', ac: 2, ar: 1, pn: 4 },
+          { label: 'C', text: '我注意到这个现象，用手机查了一下空调外机热浪对石质建筑风化的影响。', ac: 4, ar: 2, pn: 2 },
+          { label: 'D', text: '我给文化遗产局写了邮件，建议研究"集中冷却系统"的可行性，并附上外地案例。', ac: 3, ar: 4, pn: 3 }
+        ]
+      },
+      {
+        id: 'q10', chapter: 4, chapterTitle: '执政纲领',
+        location: '全球化 / 技术伦理',
+        scenario: '你刚买了辆新能源车，朋友圈都在点赞"绿色出行"。但你偶然看到一条深度报道：全球70%锂矿来自南美"锂三角"，开采1吨锂要蒸发200万升水，导致原住民社区水源枯竭。你的"绿色选择"在另一端制造了蓝色伤痕。你看着车钥匙，陷入沉思。',
+        options: [
+          { label: 'A', text: '我买了就用了，技术问题交给厂商，我没精力深究每一个供应链环节。', ac: 1, ar: 1, pn: 1 },
+          { label: 'B', text: '我了解了一下电池回收政策和锂矿供应链的透明度报告，想知道后续怎么处理。', ac: 4, ar: 2, pn: 2 },
+          { label: 'C', text: '我减少不必要的用车，觉得"少开"比"开什么车"更重要，从需求端改变。', ac: 2, ar: 1, pn: 4 },
+          { label: 'D', text: '我加入了一个关注供应链透明度的讨论组，想了解有没有推动改变的渠道。', ac: 3, ar: 4, pn: 2 }
+        ]
+      },
+      {
+        id: 'q11', chapter: 4, chapterTitle: '执政纲领',
+        location: '深港澳+全球联动',
+        scenario: '超强台风正面袭击大湾区，深圳停课、香港挂10号风球、澳门封桥。气象专家指出：全球变暖使大湾区台风强度近十年增加20%。而你想起，在"地球球长"游戏里，你上周选择了"扩建石化工业区"——虚拟决策与现实灾难在此刻重叠。',
+        options: [
+          { label: 'A', text: '我觉得台风和游戏没关系，是自然灾害，我的游戏选择影响不了现实气候。', ac: 1, ar: 1, pn: 1 },
+          { label: 'B', text: '我重新进游戏，想看看能不能调整之前的决策，测试不同路径的长期后果。', ac: 4, ar: 2, pn: 2 },
+          { label: 'C', text: '我检查了自己的应急准备，同时反思日常选择的习惯，看看哪里可以调整。', ac: 2, ar: 2, pn: 4 },
+          { label: 'D', text: '我在学校发起了一个"气候行动周"，把游戏数据和现实台风新闻做成展览。', ac: 3, ar: 4, pn: 3 }
+        ]
+      },
+      {
+        id: 'q12', chapter: 4, chapterTitle: '执政纲领',
+        location: 'IP互动 / 地球球长',
+        scenario: '小碳碳带你进入"地球球长"就职仪式。你面前放着四个未拆封的文件袋，它说："作为球长，你每天只能先打开一个。你的第一反应会决定这座城市的初始风格。没有标准答案，只有你的本能。',
+        options: [
+          { label: 'A', text: '我打开《城市运转效率报告》——先了解当前资源如何分配最合理，确保基本盘稳定。', ac: 1, ar: 1, pn: 1 },
+          { label: 'B', text: '我打开《环境决策影响链》——先了解每个政策如何影响生态、经济、社会的连锁反应。', ac: 4, ar: 1, pn: 2 },
+          { label: 'C', text: '我打开《个人执政承诺书》——先写下我绝对不会妥协的底线原则，再谈其他。', ac: 1, ar: 1, pn: 4 },
+          { label: 'D', text: '我打开《市民联名请愿书》——先了解市民最紧迫的需求和集体意愿，从人出发。', ac: 1, ar: 4, pn: 3 }
+        ]
+      }
+    ];
+
+    const RESULT_TYPES = {
+      '000': {
+        name: '碳局外人',
+        slogan: '"当下舒适，是我的第一优先级"',
+        desc: '你优先关注个人即时体验，对环保信息不敏感，认为环保是 distant issue。你倾向于选择最方便、最经济的方案，不太会为了环保因素改变习惯。这不是"错"——只是说明你还没有找到环保与个人生活的连接点。',
+        shortDesc: '优先关注个人即时体验，对环保信息不敏感。',
+        color: '#8a8a8a',
+        advice: '试着从"省钱"和"健康"的角度切入环保，比如自带杯省3元、减少外卖吃得更健康。这些即时回报可能会让你发现环保并不遥远。'
+      },
+      '001': {
+        name: '理想主义者',
+        slogan: '"我有标准，但还没看清路"',
+        desc: '你有内在道德标准，但缺乏对因果链条的了解，也回避推动他人改变。你常常感到"应该做点什么"，但不知道从哪里开始，或者担心自己的行为没有意义。',
+        shortDesc: '有内在道德标准，但缺乏对因果链条的了解。',
+        color: '#5a9ab5',
+        advice: '从"了解"开始——选一个你关心的话题（比如食物里程、快时尚），花20分钟深入了解。知识会带来更清晰的方向感。'
+      },
+      '010': {
+        name: '责任驱动者',
+        slogan: '"我愿意扛事，但常走错方向"',
+        desc: '你愿意为他人和集体担责，但常因信息不足而行动方向偏差。你很有行动力，但有时候会因为缺乏充分信息而做出效率不高的选择。',
+        shortDesc: '愿意为他人和集体担责，但常因信息不足而方向偏差。',
+        color: '#c9a030',
+        advice: '行动前先做5分钟信息验证——查一个数据来源、看一个多方对比。你的行动力加上更准确的信息，会事半功倍。'
+      },
+      '011': {
+        name: '热血行动派',
+        slogan: '"冲就完了，但可能冲过头"',
+        desc: '你有担当有原则，但决策前缺乏信息验证，容易"好心办坏事"。你的热情很宝贵，但有时候需要先停下来确认方向。',
+        shortDesc: '有担当有原则，但决策前缺乏信息验证。',
+        color: '#d07040',
+        advice: '给自己设置一个"冷静期"——遇到环保议题时，先了解不同立场的观点，再行动。你的热情加上更全面的视角，会更有影响力。'
+      },
+      '100': {
+        name: '清醒旁观者',
+        slogan: '"我看得清，但不想入局"',
+        desc: '你清楚了解因果链条，但认为个人力量有限，倾向于观察而非介入。你知道发生了什么，但觉得"一个人改变不了什么"。',
+        shortDesc: '清楚了解因果链条，但认为个人力量有限。',
+        color: '#6a8a8a',
+        advice: '从"最小可行动"开始——比如在一个群里分享一篇你读过的文章。不需要扛下所有责任，只需要把你已有的认知传递出去。'
+      },
+      '101': {
+        name: '道德清醒者',
+        slogan: '"我守得住自己，但推不动别人"',
+        desc: '你的认知和道德在线，但回避组织他人或推动制度改变，坚持个人独善。你做得很好，但有时候会觉得孤独。',
+        shortDesc: '认知和道德在线，但回避推动制度改变。',
+        color: '#4a8a6a',
+        advice: '找一个"环保搭子"——室友、同学或同事，一起尝试一个小改变。比如两人一起自带杯一周，互相监督。同伴会让坚持更容易。'
+      },
+      '110': {
+        name: '理性担当者',
+        slogan: '"我能算清账，但缺了点热血"',
+        desc: '你了解信息且愿意担责，但缺乏内在价值驱动，容易在长期坚持中倦怠。你擅长分析，但有时候需要重新找到情感上的连接。',
+        shortDesc: '了解信息且愿意担责，但缺乏内在价值驱动。',
+        color: '#5a8a7a',
+        advice: '去一次自然中——海边、山林、湿地公园。让自己重新"感受"而非"分析"环境的价值。情感连接会补充你的理性动力。'
+      },
+      '111': {
+        name: '地球合伙人',
+        slogan: '"信息、责任、原则——我全都要，但也会累"',
+        desc: '你三维度均衡，能兼顾信息、责任与原则，但可能因完美主义而焦虑。你是理想的环保行动者，但也需要学会对自己宽容。',
+        shortDesc: '三维度均衡，能兼顾信息、责任与原则。',
+        color: '#2e8b57',
+        advice: '你已经做得很好了。现在最需要的是"可持续的行动节奏"——设定边界，允许自己偶尔"不完美"。长期主义的胜利，不在于每一次都完美。'
+      }
+    };
+
+    const dimensionMeta = {
+      AC: {
+        name: '结果意识',
+        fullName: 'Awareness of Consequences',
+        desc: '你对行为与环境后果之间因果链条的了解程度。高分意味着你会主动查询信息、理解长期影响；低分意味着你倾向于关注即时、直接的回报。'
+      },
+      AR: {
+        name: '责任归属',
+        fullName: 'Attribution of Responsibility',
+        desc: '你将环境责任归因于自己还是他人、归因于个人还是制度的程度。高分意味着你愿意为集体担责、推动规则改变；低分意味着你倾向于将责任外推或认为个人无能为力。'
+      },
+      PN: {
+        name: '个体规范',
+        fullName: 'Personal Norm',
+        desc: '你内在环保道德标准的强度。高分意味着你有强烈的个人原则，即使无人监督也会坚持；低分意味着你的选择更多受外部情境驱动。'
+      }
+    };
+
+    const INTERVENTION_STRATEGIES = {
+      AC: {
+        name: '认知唤醒策略',
+        desc: '你的"结果意识"得分相对较低。建议：每周花20分钟深入了解一个环境议题的因果链条。比如计算一次外卖的碳足迹、查看一个品牌的供应链报告。知识是改变的第一步。'
+      },
+      AR: {
+        name: '本地化责任策略',
+        desc: '你的"责任归属"得分相对较低。建议：从"我能影响的最小集体"开始——宿舍、班级、家庭。发起一个具体的小行动（如旧物回收、空调公约），体验"推动改变"的成就感。'
+      },
+      PN: {
+        name: '行为契约策略',
+        desc: '你的"个体规范"得分相对较低。建议：找一个"环保搭子"或公开承诺一个具体行动。外部监督和承诺机制会帮助你建立内在习惯，最终内化为个人原则。'
+      },
+      ALL_HIGH: {
+        name: '领袖赋能策略',
+        desc: '你的三个维度得分都很高！你已经具备了信息、责任和原则的基础。建议：现在最重要的是保护自己不 burnout——设定可持续的行动节奏，学会"足够好"而非"完美"，并把你的经验分享给他人。'
+      }
+    };
+
+    const chapterTips = {
+      1: '接下来你会进入日常生活的场景，请凭直觉选择最接近你真实行为的选项。',
+      2: '这一章的场景会触及全球化议题——你的消费选择如何影响远方的人与环境。',
+      3: '这一章你会面对价值冲突：个人利益与集体利益、短期便利与长期可持续。',
+      4: '最后一章，你将从"观察者"转变为"决策者"——如果是你，你会怎么选？'
+    };
+
+    // ===================== APP STATE =====================
+
+    const app = {
+      currentIndex: 0,
+      answers: {},
+      get currentQuestion() { return questions[this.currentIndex]; },
+      get totalQuestions() { return questions.length; },
+      get isFirst() { return this.currentIndex === 0; },
+      get isLast() { return this.currentIndex === questions.length - 1; }
+    };
+
+    // ===================== DOM ELEMENTS =====================
+
+    const els = {
+      intro: document.getElementById('intro'),
+      test: document.getElementById('test'),
+      chapterTransition: document.getElementById('chapter-transition'),
+      result: document.getElementById('result'),
+      typewriter: document.getElementById('typewriter'),
+      btnStart: document.getElementById('btnStart'),
+      chapterLabel: document.getElementById('chapterLabel'),
+      chapterTitle: document.getElementById('chapterTitle'),
+      progressText: document.getElementById('progressText'),
+      progressFill: document.getElementById('progressFill'),
+      questionLocation: document.getElementById('questionLocation'),
+      questionScenario: document.getElementById('questionScenario'),
+      questionNumber: document.getElementById('questionNumber'),
+      questionImage: document.getElementById('questionImage'),
+      optionsList: document.getElementById('optionsList'),
+      btnPrev: document.getElementById('btnPrev'),
+      btnNext: document.getElementById('btnNext'),
+      transitionTitle: document.getElementById('transitionTitle'),
+      transitionDesc: document.getElementById('transitionDesc'),
+      transitionTip: document.getElementById('transitionTip'),
+      btnContinue: document.getElementById('btnContinue'),
+      resultTypeBadge: document.getElementById('resultTypeBadge'),
+      resultName: document.getElementById('resultName'),
+      resultSlogan: document.getElementById('resultSlogan'),
+      resultDesc: document.getElementById('resultDesc'),
+      resultAdvice: document.getElementById('resultAdvice'),
+      interventionBox: document.getElementById('interventionBox'),
+      interventionTitle: document.getElementById('interventionTitle'),
+      interventionDesc: document.getElementById('interventionDesc'),
+      barAc: document.getElementById('barAc'),
+      barAr: document.getElementById('barAr'),
+      barPn: document.getElementById('barPn'),
+      valAc: document.getElementById('valAc'),
+      valAr: document.getElementById('valAr'),
+      valPn: document.getElementById('valPn'),
+      radarCanvas: document.getElementById('radarCanvas'),
+      btnShare: document.getElementById('btnShare'),
+      btnRestart: document.getElementById('btnRestart'),
+      shareModal: document.getElementById('shareModal'),
+      shareModalImg: document.getElementById('shareModalImg'),
+      btnCloseModal: document.getElementById('btnCloseModal')
+    };
+
+    // ===================== NAVIGATION =====================
+
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => {
+        s.classList.remove('active', 'fade-in');
+      });
+      const target = document.getElementById(screenId);
+      target.classList.add('active');
+      // Trigger reflow for animation
+      void target.offsetWidth;
+      requestAnimationFrame(() => target.classList.add('fade-in'));
+    }
+
+    // ===================== TYPEWRITER =====================
+
+    const introText = '这是一封来自小碳碳的来信。\n\n你被选中成为地球球长候选人。\n\n你将经历12个真实世界的切片。\n\n你的选择没有对错，只是展现你天然的决策风格。';
+    let typewriterIndex = 0;
+
+    function typeWriter() {
+      if (typewriterIndex < introText.length) {
+        const char = introText[typewriterIndex];
+        if (char === '\n') {
+          els.typewriter.innerHTML += '<br>';
+        } else {
+          els.typewriter.innerHTML += char;
+        }
+        typewriterIndex++;
+        setTimeout(typeWriter, 45);
+      } else {
+        els.typewriter.innerHTML += '<span class="typewriter-cursor"></span>';
+        els.btnStart.style.display = 'inline-block';
+      }
+    }
+
+    // ===================== TEST LOGIC =====================
+
+    function renderQuestion() {
+      const q = app.currentQuestion;
+      const ans = app.answers[q.id];
+
+      // Header
+      els.chapterLabel.textContent = `第${q.chapter}章`;
+      els.chapterTitle.textContent = q.chapterTitle;
+
+      // Progress
+      const progress = ((app.currentIndex + 1) / app.totalQuestions) * 100;
+      els.progressText.textContent = `${app.currentIndex + 1} / ${app.totalQuestions}`;
+      els.progressFill.style.width = `${progress}%`;
+
+      // Question
+      els.questionLocation.textContent = q.location;
+      els.questionScenario.textContent = q.scenario;
+      els.questionNumber.textContent = `第 ${app.currentIndex + 1} 题 / 共 ${app.totalQuestions} 题`;
+      
+      // Load question image with preload
+      const imgId = q.id.replace('q', '');
+      const imgPath = `image/q${imgId}.png`;
+      els.questionImage.style.display = 'none';
+      els.questionImage.src = '';
+      
+      const img = new Image();
+      img.onload = function() {
+        els.questionImage.src = imgPath;
+        els.questionImage.style.display = 'block';
+      };
+      img.onerror = function() {
+        els.questionImage.style.display = 'none';
+      };
+      img.src = imgPath;
+
+      // Options
+      els.optionsList.innerHTML = '';
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn' + (ans && ans.index === idx ? ' selected' : '');
+        btn.innerHTML = `
+          <div class="option-letter">${opt.label}</div>
+          <div class="option-text">${opt.text}</div>
+        `;
+        btn.onclick = () => selectOption(idx);
+        els.optionsList.appendChild(btn);
+      });
+
+      // Nav
+      els.btnPrev.disabled = app.isFirst;
+      els.btnPrev.style.visibility = app.isFirst ? 'hidden' : 'visible';
+      els.btnNext.textContent = app.isLast ? '查看结果' : '下一题';
+      els.btnNext.disabled = !ans;
+    }
+
+    function selectOption(index) {
+      const q = app.currentQuestion;
+      const opt = q.options[index];
+      app.answers[q.id] = { index, ac: opt.ac, ar: opt.ar, pn: opt.pn };
+
+      analytics.trackAnswer(q.id, index);
+
+      // Update UI
+      document.querySelectorAll('.option-btn').forEach((btn, idx) => {
+        btn.classList.toggle('selected', idx === index);
+      });
+      els.btnNext.disabled = false;
+
+      // Auto advance after short delay
+      setTimeout(() => {
+        if (!app.isLast) {
+          nextQuestion();
+        }
+      }, 400);
+    }
+
+    function nextQuestion() {
+      if (app.isLast) {
+        showResult();
+        return;
+      }
+      // Check chapter transition
+      const currentChapter = app.currentQuestion.chapter;
+      app.currentIndex++;
+      const nextChapter = app.currentQuestion.chapter;
+      if (nextChapter !== currentChapter) {
+        showChapterTransition(nextChapter);
+      } else {
+        renderQuestion();
+      }
+    }
+
+    function prevQuestion() {
+      if (app.isFirst) return;
+      app.currentIndex--;
+      renderQuestion();
+    }
+
+    function showChapterTransition(chapter) {
+      els.transitionTitle.textContent = `第${chapter}章`;
+      els.transitionDesc.textContent = questions.find(q => q.chapter === chapter).chapterTitle;
+      els.transitionTip.textContent = chapterTips[chapter] || '请继续作答。';
+      showScreen('chapter-transition');
+    }
+
+    // ===================== COMPUTATION =====================
+
+    function computeResult() {
+      let ac = 0, ar = 0, pn = 0;
+      const acQuestions = ['q1','q4','q7','q10','q11','q12'];
+      const arQuestions = ['q2','q5','q7','q8','q9','q10','q11','q12'];
+      const pnQuestions = ['q3','q5','q6','q8','q9','q10','q11','q12'];
+
+      acQuestions.forEach(id => ac += app.answers[id]?.ac || 0);
+      arQuestions.forEach(id => ar += app.answers[id]?.ar || 0);
+      pnQuestions.forEach(id => pn += app.answers[id]?.pn || 0);
+
+      const acHigh = ac >= 15;
+      const arHigh = ar >= 21;
+      const pnHigh = pn >= 21;
+
+      const typeKey = (acHigh?'1':'0') + (arHigh?'1':'0') + (pnHigh?'1':'0');
+
+      return { ac, ar, pn, acHigh, arHigh, pnHigh, typeKey, type: RESULT_TYPES[typeKey] };
+    }
+
+    function getIntervention(result) {
+      const scores = [
+        { dim: 'AC', value: result.ac, max: 24 },
+        { dim: 'AR', value: result.ar, max: 32 },
+        { dim: 'PN', value: result.pn, max: 32 }
+      ];
+      const minScore = Math.min(...scores.map(s => s.value / s.max));
+      const minDims = scores.filter(s => s.value / s.max === minScore).map(s => s.dim);
+
+      if (minDims.length === 3) {
+        return { ...INTERVENTION_STRATEGIES.ALL_HIGH, dim: 'ALL' };
+      }
+      return { ...INTERVENTION_STRATEGIES[minDims[0]], dim: minDims[0] };
+    }
+
+    // ===================== RESULT RENDERING =====================
+
+    function showResult() {
+      const result = computeResult();
+      analytics.trackResult(result.typeKey);
+
+      // 提交结果到远程数据库
+      submitResult(result);
+
+      // Header
+      const result = computeResult();
+      analytics.trackResult(result.typeKey);
+
+      // Header
+      els.resultTypeBadge.textContent = result.type.name;
+      els.resultName.textContent = result.type.name;
+      els.resultSlogan.textContent = result.type.slogan;
+      els.resultDesc.textContent = result.type.desc;
+      els.resultAdvice.textContent = result.type.advice;
+
+      // Bars
+      const acPct = (result.ac / 24) * 100;
+      const arPct = (result.ar / 32) * 100;
+      const pnPct = (result.pn / 32) * 100;
+      els.barAc.style.width = `${acPct}%`;
+      els.barAr.style.width = `${arPct}%`;
+      els.barPn.style.width = `${pnPct}%`;
+      els.valAc.textContent = `${result.ac}/24`;
+      els.valAr.textContent = `${result.ar}/32`;
+      els.valPn.textContent = `${result.pn}/32`;
+
+      // Intervention
+      const intervention = getIntervention(result);
+      els.interventionTitle.textContent = intervention.name;
+      els.interventionDesc.textContent = intervention.desc;
+
+      // Show screen first, then draw radar after layout settles
+      showScreen('result');
+      // Delay radar draw to ensure canvas has correct layout
+      setTimeout(() => {
+        drawRadarChart(els.radarCanvas, result);
+      }, 100);
+    }
+
+    // ===================== RADAR CHART =====================
+
+    function drawRadarChart(canvas, scores) {
+      // Use fixed logical size matching canvas attributes (360x300)
+      const logicalWidth = 360;
+      const logicalHeight = 300;
+      const dpr = window.devicePixelRatio || 1;
+      
+      // Set actual canvas size with DPR scaling for crisp rendering
+      canvas.width = logicalWidth * dpr;
+      canvas.height = logicalHeight * dpr;
+      
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+
+      const w = logicalWidth;
+      const h = logicalHeight;
+      const centerX = w / 2;
+      const centerY = h / 2 + 10;
+      const radius = Math.min(w, h) * 0.35;
+
+      const dimensions = [
+        { name: '结果意识', max: 24, key: 'ac' },
+        { name: '责任归属', max: 32, key: 'ar' },
+        { name: '个体规范', max: 32, key: 'pn' }
+      ];
+      const values = [scores.ac, scores.ar, scores.pn];
+      const maxValues = [24, 32, 32];
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Grid levels
+      const levels = [0.25, 0.5, 0.75, 1];
+      levels.forEach(level => {
+        ctx.beginPath();
+        for (let i = 0; i < 3; i++) {
+          const angle = (Math.PI * 2 / 3) * i - Math.PI / 2;
+          const x = centerX + Math.cos(angle) * radius * level;
+          const y = centerY + Math.sin(angle) * radius * level;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = 'rgba(184, 216, 208, 0.5)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      });
+
+      // Axes
+      for (let i = 0; i < 3; i++) {
+        const angle = (Math.PI * 2 / 3) * i - Math.PI / 2;
+        const x = centerX + Math.cos(angle) * radius;
+        const y = centerY + Math.sin(angle) * radius;
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(x, y);
+        ctx.strokeStyle = 'rgba(184, 216, 208, 0.7)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // Data area
+      ctx.beginPath();
+      for (let i = 0; i < 3; i++) {
+        const angle = (Math.PI * 2 / 3) * i - Math.PI / 2;
+        const ratio = values[i] / maxValues[i];
+        const x = centerX + Math.cos(angle) * radius * ratio;
+        const y = centerY + Math.sin(angle) * radius * ratio;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(46, 139, 87, 0.15)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(46, 139, 87, 0.6)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Data points
+      for (let i = 0; i < 3; i++) {
+        const angle = (Math.PI * 2 / 3) * i - Math.PI / 2;
+        const ratio = values[i] / maxValues[i];
+        const x = centerX + Math.cos(angle) * radius * ratio;
+        const y = centerY + Math.sin(angle) * radius * ratio;
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.fillStyle = '#2e8b57';
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      // Labels
+      ctx.font = 'bold 14px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.fillStyle = '#1a3a3a';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      for (let i = 0; i < 3; i++) {
+        const angle = (Math.PI * 2 / 3) * i - Math.PI / 2;
+        const labelRadius = radius + 32;
+        const x = centerX + Math.cos(angle) * labelRadius;
+        const y = centerY + Math.sin(angle) * labelRadius;
+        ctx.fillText(dimensions[i].name, x, y);
+      }
+    }
+
+    // ===================== SHARE CARD =====================
+
+    async function generateShareCard(result) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1080;
+      canvas.height = 1080;
+      const ctx = canvas.getContext('2d');
+      const canvas = document.createElement('canvas');
+      canvas.width = 1080;
+      canvas.height = 1080;
+      const ctx = canvas.getContext('2d');
+
+      // Background gradient
+      const grad = ctx.createLinearGradient(0, 0, 1080, 1080);
+      grad.addColorStop(0, '#e8f4f8');
+      grad.addColorStop(0.5, '#f0f7f4');
+      grad.addColorStop(1, '#e0f0e8');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 1080, 1080);
+
+      // Decorative circles
+      ctx.beginPath();
+      ctx.arc(120, 120, 80, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(135, 206, 235, 0.2)';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(960, 960, 120, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(46, 139, 87, 0.08)';
+      ctx.fill();
+
+      // Title
+      ctx.fillStyle = '#2e8b57';
+      ctx.font = 'bold 42px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('我的环保MBTI人格', 540, 100);
+
+      // Type name
+      ctx.fillStyle = '#1a3a3a';
+      ctx.font = 'bold 72px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.fillText(result.type.name, 540, 200);
+
+      // Slogan
+      ctx.fillStyle = '#5a8a7a';
+      ctx.font = 'italic 36px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.fillText(result.type.slogan.replace(/"/g, ''), 540, 260);
+
+      // Mini radar (simplified)
+      const radarCX = 540;
+      const radarCY = 480;
+      const radarR = 140;
+      const dims = [
+        { value: result.ac, max: 24 },
+        { value: result.ar, max: 32 },
+        { value: result.pn, max: 32 }
+      ];
+
+      // Grid
+      [0.25, 0.5, 0.75, 1].forEach(level => {
+        ctx.beginPath();
+        for (let i = 0; i < 3; i++) {
+          const angle = (Math.PI * 2 / 3) * i - Math.PI / 2;
+          const x = radarCX + Math.cos(angle) * radarR * level;
+          const y = radarCY + Math.sin(angle) * radarR * level;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = 'rgba(184, 216, 208, 0.6)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      });
+      // Axes
+      for (let i = 0; i < 3; i++) {
+        const angle = (Math.PI * 2 / 3) * i - Math.PI / 2;
+        const x = radarCX + Math.cos(angle) * radarR;
+        const y = radarCY + Math.sin(angle) * radarR;
+        ctx.beginPath();
+        ctx.moveTo(radarCX, radarCY);
+        ctx.lineTo(x, y);
+        ctx.strokeStyle = 'rgba(184, 216, 208, 0.8)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+      // Data
+      ctx.beginPath();
+      for (let i = 0; i < 3; i++) {
+        const angle = (Math.PI * 2 / 3) * i - Math.PI / 2;
+        const ratio = dims[i].value / dims[i].max;
+        const x = radarCX + Math.cos(angle) * radarR * ratio;
+        const y = radarCY + Math.sin(angle) * radarR * ratio;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(46, 139, 87, 0.2)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(46, 139, 87, 0.7)';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+      // Points
+      for (let i = 0; i < 3; i++) {
+        const angle = (Math.PI * 2 / 3) * i - Math.PI / 2;
+        const ratio = dims[i].value / dims[i].max;
+        const x = radarCX + Math.cos(angle) * radarR * ratio;
+        const y = radarCY + Math.sin(angle) * radarR * ratio;
+        ctx.beginPath();
+        ctx.arc(x, y, 10, 0, Math.PI * 2);
+        ctx.fillStyle = '#2e8b57';
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+      }
+      // Labels
+      ctx.font = 'bold 28px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.fillStyle = '#1a3a3a';
+      const labels = ['结果意识', '责任归属', '个体规范'];
+      for (let i = 0; i < 3; i++) {
+        const angle = (Math.PI * 2 / 3) * i - Math.PI / 2;
+        const lr = radarR + 50;
+        const x = radarCX + Math.cos(angle) * lr;
+        const y = radarCY + Math.sin(angle) * lr;
+        ctx.fillText(labels[i], x, y);
+      }
+
+      // Dimension bars
+      const barY = 720;
+      const barW = 500;
+      const barH = 24;
+      const barGap = 60;
+      const dimData = [
+        { label: '结果意识', value: result.ac, max: 24, color: '#20b2aa' },
+        { label: '责任归属', value: result.ar, max: 32, color: '#2e8b57' },
+        { label: '个体规范', value: result.pn, max: 32, color: '#3cb371' }
+      ];
+      dimData.forEach((dim, idx) => {
+        const y = barY + idx * barGap;
+        ctx.font = '28px -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.fillStyle = '#1a3a3a';
+        ctx.textAlign = 'right';
+        ctx.fillText(dim.label, 300, y + 8);
+
+        ctx.fillStyle = '#e0f0e8';
+        ctx.fillRect(320, y - 12, barW, barH);
+
+        const pct = dim.value / dim.max;
+        ctx.fillStyle = dim.color;
+        ctx.fillRect(320, y - 12, barW * pct, barH);
+
+        ctx.fillStyle = '#5a8a7a';
+        ctx.textAlign = 'left';
+        ctx.fillText(`${dim.value}/${dim.max}`, 320 + barW + 16, y + 8);
+      });
+
+      // Short desc
+      ctx.fillStyle = '#5a8a7a';
+      ctx.font = '28px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.textAlign = 'center';
+      const descY = 950;
+      const shortDesc = result.type.shortDesc;
+      const maxChars = 26;
+      const words = shortDesc.split('');
+      let line = '';
+      const lines = [];
+      words.forEach(w => {
+        if ((line + w).length > maxChars) {
+          lines.push(line);
+          line = w;
+        } else {
+          line += w;
+        }
+      });
+      if (line) lines.push(line);
+      lines.forEach((l, i) => {
+        ctx.fillText(l, 540, descY + i * 40);
+      });
+
+      // Footer
+      ctx.fillStyle = '#b8d8d0';
+      ctx.font = '24px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.fillText('扫描体验完整测试 · eco-mbti', 540, 1040);
+
+      // QR Code
+      try {
+        const qrDataUrl = await QRCode.toDataURL(CONFIG.siteUrl, {
+          width: 160,
+          margin: 2,
+          color: { dark: '#2e8b57', light: '#ffffff' }
+        });
+        const qrImg = new Image();
+        qrImg.src = qrDataUrl;
+        await new Promise((resolve, reject) => {
+          qrImg.onload = resolve;
+          qrImg.onerror = reject;
+        });
+        // Draw QR code at bottom right
+        ctx.drawImage(qrImg, 860, 880, 160, 160);
+        // Label under QR
+        ctx.fillStyle = '#5a8a7a';
+        ctx.font = '18px -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('扫码测一测', 940, 1060);
+      } catch (e) {
+        console.error('QR Code 生成失败:', e);
+      }
+
+      return canvas.toDataURL('image/png');
+    }
+
+    // ===================== ANALYTICS =====================
+
+    const analytics = {
+      data: { answers: {}, result: null, shares: 0 },
+      trackAnswer(questionId, optionIndex) {
+        this.data.answers[questionId] = optionIndex;
+        this.save();
+      },
+      trackResult(typeKey) {
+        this.data.result = typeKey;
+        this.save();
+      },
+      trackShare() {
+        this.data.shares = (this.data.shares || 0) + 1;
+        this.save();
+      },
+      save() {
+        try {
+          localStorage.setItem('eco_mbti_data', JSON.stringify(this.data));
+        } catch (e) {}
+      },
+      load() {
+        try {
+          const raw = localStorage.getItem('eco_mbti_data');
+          if (raw) this.data = JSON.parse(raw);
+        } catch (e) {}
+      }
+    };
+
+    // ===================== EVENTS =====================
+
+    els.btnStart.addEventListener('click', () => {
+      showScreen('test');
+      renderQuestion();
+    });
+
+    els.btnNext.addEventListener('click', nextQuestion);
+    els.btnPrev.addEventListener('click', prevQuestion);
+
+    els.btnContinue.addEventListener('click', () => {
+      showScreen('test');
+      renderQuestion();
+    });
+
+    els.btnRestart.addEventListener('click', () => {
+      app.currentIndex = 0;
+      app.answers = {};
+      showScreen('intro');
+      typewriterIndex = 0;
+      els.typewriter.innerHTML = '';
+      typeWriter();
+      els.btnStart.style.display = 'none';
+    });
+
+    els.btnShare.addEventListener('click', async () => {
+      const result = computeResult();
+      const dataUrl = await generateShareCard(result);
+      analytics.trackShare();
+      els.shareModalImg.src = dataUrl;
+      els.shareModal.classList.add('active');
+    });
+
+    els.btnCloseModal.addEventListener('click', () => {
+      els.shareModal.classList.remove('active');
+    });
+
+    els.shareModal.addEventListener('click', (e) => {
+      if (e.target === els.shareModal) {
+        els.shareModal.classList.remove('active');
+      }
+    });
+
+    // Nav links
+    document.querySelectorAll('.nav-links a').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const screen = link.dataset.screen;
+        if (screen) {
+          showScreen(screen);
+          if (screen === 'intro') {
+            typewriterIndex = 0;
+            els.typewriter.innerHTML = '';
+            typeWriter();
+            els.btnStart.style.display = 'none';
+          }
+          if (screen === 'test') {
+            renderQuestion();
+          }
+        }
+      });
+    });
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      const activeScreen = document.querySelector('.screen.active');
+      if (!activeScreen) return;
+      if (activeScreen.id === 'test') {
+        if (e.key === 'ArrowLeft' && !app.isFirst) prevQuestion();
+        if (e.key === 'ArrowRight' && app.answers[app.currentQuestion.id]) nextQuestion();
+        if (['1','2','3','4'].includes(e.key)) {
+          const idx = parseInt(e.key) - 1;
+          if (idx < app.currentQuestion.options.length) selectOption(idx);
+        }
+      }
+    });
+
+    // ===================== INIT =====================
+
+    analytics.load();
+    showScreen('intro');
+    typeWriter();
+    initVisitorCount();
+
+    // Resize handler for radar chart
+    window.addEventListener('resize', () => {
+      if (els.result.classList.contains('active')) {
+        const result = computeResult();
+        drawRadarChart(els.radarCanvas, result);
+      }
+    });
+  </script>
+
+</body>
+</html>
